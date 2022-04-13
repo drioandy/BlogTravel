@@ -1,0 +1,155 @@
+@extends('admin.layouts.index')
+@section('title','Comment List')
+@section('content')
+    @if(session()->has('message'))
+        <div class="  rounded text-success text-center mb-3 p-3 " role="alert" style="background-color: #d4edda">
+            {{ session()->get('message') }}
+        </div>
+    @endif
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header  ">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-tools">
+                            <form action="{{route('comment.index')}}">
+
+                                <div class="input-group input-group-sm ">
+                                    <input type="text" name="keyword" class="form-control float-right"
+                                           placeholder="Search By Comment Content">
+
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-default">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                        </div>
+                        @if($comments->total()	> $comments->perPage())
+                            {{$comments->links()}}
+                        @endif
+                    </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body ">
+
+                    <table class="table table-bordered table-hover ">
+                        <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>User Name</th>
+                            <th>Post Title</th>
+                            <th>Comment Content</th>
+                            <th class="text-center">
+                                Action
+                            </th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if($comments->total() > 0)
+                            @foreach($comments as $key => $comment)
+                                <tr>
+                                    <td>{{$key +1}}</td>
+                                    <td>{{$comment->user->user_name}}</td>
+                                    <td>
+                                        @if(isset($comment->post->title))
+                                            <a href="" data-target="#modal-xl-{{$comment->id}}" data-toggle="modal"
+                                               class="text-info mr-2 border-0 bg-transparent">{{$comment->post->title}}</a>
+                                            <div class="modal fade" id="modal-xl-{{$comment->id}}"
+                                                 style="display: none;" aria-hidden="true">
+
+                                                <div class="modal-dialog modal-xl">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h4 class="modal-title">{{$comment->post->title}}</h4>
+                                                            <button type="button" class="close" data-dismiss="modal"
+                                                                    aria-label="Close">
+                                                                <span aria-hidden="true">×</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <iframe src="{{route('post.view',$comment->post->url_key)}}"
+                                                                    width="100%" height="500px"
+                                                                    title="W3Schools Free Online Web Tutorials"></iframe>
+                                                        </div>
+                                                        <div class="modal-footer justify-content-end">
+                                                            <button type="button" class="btn btn-primary"
+                                                                    data-dismiss="modal">Close
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- /.modal-content -->
+                                                </div>
+                                                <!-- /.modal-dialog -->
+                                            </div>
+                                        @else
+                                            The Post Is Deleted Or Reject
+                                        @endif
+                                    </td>
+                                    <td>{{$comment->content}}</td>
+                                    <td>
+                                        <div
+                                            class="text-center d-flex justify-content-center ">
+
+                                            <form action="{{ route('comment.delete',$comment->url_key) }}"
+                                                  method="POST">
+                                                @method('DELETE')
+                                                @csrf
+                                                <button type="submit"
+                                                        class="text-danger bg-transparent border-0 js-delete-button"><i
+                                                        class="fas fa-trash-alt"></i></button>
+                                            </form>
+                                        </div>
+
+                                    </td>
+                                </tr>
+
+                            @endforeach
+                        @else
+                            <tr>
+                                <td class="text-center" colspan="5">List doesn't have comment</td>
+                            </tr>
+                        @endif
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+    <script>
+
+        $('.js-delete-button').click(function (e) {
+            var form = $(this).closest("form");
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire(
+                        'Deleted!',
+                        'Comment has been deleted.',
+                        'success'
+                    ).then(() => {
+                        form.submit();
+                    })
+                }
+            })
+        });
+
+    </script>
+
+@endsection
